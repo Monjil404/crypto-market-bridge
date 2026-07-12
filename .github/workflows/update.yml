@@ -1,0 +1,37 @@
+name: Update market data
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # every 10 min (GitHub's scheduler is best-effort)
+  workflow_dispatch: {}       # lets you run it manually from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-data
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch Binance market data
+        run: node fetch.mjs
+
+      - name: Publish market.json to the `data` branch
+        run: |
+          git config user.name "market-bot"
+          git config user.email "market-bot@users.noreply.github.com"
+          # Single-commit data branch (force-pushed) so history stays tiny.
+          git checkout --orphan data
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          git add market.json
+          git commit -m "market data $(date -u +%FT%TZ)"
+          git push -f origin data
