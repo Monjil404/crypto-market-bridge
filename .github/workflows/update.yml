@@ -1,9 +1,11 @@
 name: Update market data
 
 on:
+  push:
+    branches: [main]
   schedule:
-    - cron: "*/10 * * * *"   # every 10 min (GitHub's scheduler is best-effort)
-  workflow_dispatch: {}       # lets you run it manually from the Actions tab
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}     # lets you run it manually from the Actions tab
 
 permissions:
   contents: write
